@@ -20,6 +20,7 @@ void Engine::update(float dt)
     this->mouse_position = sf::Mouse::getPosition(*this->window);
     this->mouse_position_view = this->window->mapPixelToCoords(this->mouse_position);
 
+    scene->getMousePos(this->mouse_position_view);
     scene->update(dt);
     this->updateImGui();
     ImGui::Begin("Proto");
