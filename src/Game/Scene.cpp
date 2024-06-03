@@ -49,8 +49,14 @@ void Scene::update(float dt)
 {
     sf::Vector2f disp = target.property.getPosition() - joints[0].property.getPosition();
     float dist = Math::_length(disp);
-    if (dist < (upperarm_length + forearm_length))
-        joints[2].property.move((target.property.getPosition() - joints[2].property.getPosition()) * 0.3f);
+    if (dist >= (upperarm_length + forearm_length))
+    {
+        disp = target.property.getPosition() - joints[1].property.getPosition();
+        float angle = Math::_atan2(disp.y, disp.x);
+        target.property.setPosition(joints[1].property.getPosition() + sf::Vector2f(Math::_cos(angle), Math::_sin(angle)) * forearm_length);
+    }
+
+    joints[2].property.move((target.property.getPosition() - joints[2].property.getPosition()) * 0.3f);
 
     // ik
     solveIK();
