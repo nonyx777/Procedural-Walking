@@ -14,8 +14,10 @@ private:
     static Scene *instance;
     std::vector<std::vector<Box>> grid;
 
-    std::vector<Circle> joints;
-    std::vector<Line> links;
+    std::vector<Circle> right_joints;
+    std::vector<Circle> left_joints;
+    std::vector<Line> right_links;
+    std::vector<Line> left_links;
 
     Circle target;
 
@@ -42,9 +44,10 @@ public:
     void getMousePos(sf::Vector2f mouse_position);
 
     // joint and link
-    void alignLink();
-    void alignJoint(sf::Vector2f elbow_pos);
+    void alignLink(std::vector<Line> &links, std::vector<Circle> &joints);
+    void alignJoint(sf::Vector2f elbow_pos, std::vector<Circle> &joints);
 
     // IK related
-    void solveIK();
+    void solveIK(std::vector<Circle> &joints);
+    void outOfReach(std::vector<Circle> &joints, Circle &target_);
 };
