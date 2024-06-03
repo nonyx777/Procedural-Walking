@@ -4,33 +4,31 @@ Scene *Scene::instance = nullptr;
 
 Scene::Scene()
 {
+    // body
+    body = Circle(50.f, sf::Vector2f(GLOBAL::window_width * 0.1f, GLOBAL::window_height - (upperarm_length + forearm_length)));
+    body.property.setFillColor(sf::Color(171, 120, 78, 255));
+
+    // target...
+    right_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(-body.property.getRadius() * 0.5f, (upperarm_length + forearm_length - 10.f)));
+    right_target.property.setFillColor(sf::Color::Red);
+    left_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, (upperarm_length + forearm_length - 10.f)));
+    left_target.property.setFillColor(sf::Color::Green);
+
     // setting up right leg joints
-    Circle joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f - 50.f, GLOBAL::window_height / 2.f));
+    Circle joint = Circle(10.f, body.property.getPosition() - sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
     this->right_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f, GLOBAL::window_height / 2.f + 50.f));
     this->right_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f + 50.f, GLOBAL::window_height / 2.f));
     this->right_joints.push_back(joint);
 
-    this->upperarm_length = Math::_length(right_joints[1].property.getPosition() - right_joints[0].property.getPosition());
-    this->forearm_length = Math::_length(right_joints[2].property.getPosition() - right_joints[1].property.getPosition());
-
     // setting up left leg joints
-    joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f + 50.f, GLOBAL::window_height / 2.f));
+    joint = Circle(10.f, body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
     this->left_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f + 100.f, GLOBAL::window_height / 2.f + 50.f));
     this->left_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f + 150.f, GLOBAL::window_height / 2.f));
     this->left_joints.push_back(joint);
-
-    // target...
-    target = Circle(10.f, right_joints[2].property.getPosition() - sf::Vector2f(50.f, 100.f));
-    target.property.setFillColor(sf::Color::Red);
-
-    if (GLOBAL::display_grid)
-    {
-        configureGrid(GLOBAL::cell_size, &this->grid);
-    }
 }
 
 Scene::~Scene()
@@ -48,33 +46,33 @@ Scene *Scene::getInstance()
 
 void Scene::update(float dt)
 {
-    outOfReach(right_joints, target);
-    outOfReach(left_joints, target);
+    outOfReach(right_joints, right_target);
+    outOfReach(left_joints, left_target);
     // ik
-    solveIK(right_joints);
-    solveIK(left_joints);
+    solveIK(right_joints, right_target);
+    solveIK(left_joints, left_target);
     // alignment
+    alignHip();
     alignLink(right_links, right_joints);
     alignLink(left_links, left_joints);
 }
 
 void Scene::render(sf::RenderTarget *target)
 {
-    for (Circle &circle : this->right_joints)
-        circle.render(target);
-    for (Line &line : this->right_links)
-        line.render(target);
     for (Circle &circle : this->left_joints)
         circle.render(target);
     for (Line &line : this->left_links)
         line.render(target);
 
-    this->target.render(target);
-}
+    this->body.render(target);
 
-void Scene::getMousePos(sf::Vector2f mouse_position)
-{
-    target.property.setPosition(mouse_position);
+    for (Circle &circle : this->right_joints)
+        circle.render(target);
+    for (Line &line : this->right_links)
+        line.render(target);
+
+    this->right_target.render(target);
+    this->left_target.render(target);
 }
 
 void Scene::alignLink(std::vector<Line> &links, std::vector<Circle> &joints)
@@ -93,7 +91,7 @@ void Scene::alignJoint(sf::Vector2f elbow_pos, std::vector<Circle> &joints)
     joints[1].property.setPosition(elbow_pos);
 }
 
-void Scene::solveIK(std::vector<Circle> &joints)
+void Scene::solveIK(std::vector<Circle> &joints, Circle &target)
 {
     float distance = Math::_length(joints[2].property.getPosition() - target.property.getPosition());
     if (distance < epsilon)
@@ -127,4 +125,10 @@ void Scene::outOfReach(std::vector<Circle> &joints, Circle &target_)
     }
 
     joints[2].property.move((target_.property.getPosition() - joints[2].property.getPosition()) * 0.3f);
+}
+
+void Scene::alignHip()
+{
+    right_joints[0].property.setPosition(body.property.getPosition() - sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
+    left_joints[0].property.setPosition(body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
 }
