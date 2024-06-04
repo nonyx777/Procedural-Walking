@@ -36,7 +36,7 @@ Scene::Scene()
 
     // could have also used left_target
     foot_distance_on_x = body.property.getPosition().x - right_target.property.getPosition().x;
-    over_shoot_factor = 10.f;
+    over_shoot_factor = 5.f;
 }
 
 Scene::~Scene()
@@ -71,6 +71,12 @@ void Scene::update(float dt)
 
     // walk
     solveWalk();
+
+    right_target.property.setPosition(Math::_lerp(r_start_pos, r_end_pos, lerp));
+    left_target.property.setPosition(Math::_lerp(l_start_pos, l_end_pos, lerp));
+    
+    if(lerp < 1.05f)
+        lerp += step_speed * dt;
 }
 
 void Scene::render(sf::RenderTarget *target)
@@ -165,20 +171,22 @@ bool Scene::inBalance(float x, float y, float value)
 void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target)
 {
     start_pos = end_pos;
+
+    lerp = 0.f;
+
     if (foot_target.property.getFillColor() == sf::Color::Red)
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) - sf::Vector2f(foot_distance_on_x, 0.f);
     else
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) + sf::Vector2f(foot_distance_on_x, 0.f);
 
-    sf::Vector2f disp = (end_pos + sf::Vector2f(over_shoot_factor, 0.f)) - foot_target.property.getPosition();
-    foot_target.property.move(disp);
+    end_pos += sf::Vector2f(over_shoot_factor, 0.f);
 }
 
 void Scene::solveWalk()
 {
-    if (inBalance(right_joints[2].property.getPosition().x, left_joints[2].property.getPosition().x, body.property.getPosition().x) ||
-        body.property.getPosition().x <= right_joints[2].property.getPosition().x)
-        return;
-    newStep(r_start_pos, r_end_pos, right_target);
-    newStep(l_start_pos, l_end_pos, left_target);
+    if (!inBalance(right_joints[2].property.getPosition().x, left_joints[2].property.getPosition().x, body.property.getPosition().x) && lerp > 1.f)
+    {
+        newStep(r_start_pos, r_end_pos, right_target);
+        newStep(l_start_pos, l_end_pos, left_target);
+    }
 }

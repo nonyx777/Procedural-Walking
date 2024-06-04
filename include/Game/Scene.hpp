@@ -35,7 +35,7 @@ private:
     sf::Vector2f r_start_pos, r_end_pos, r_mid_pos;
     sf::Vector2f l_start_pos, l_end_pos, l_mid_pos;
     float over_shoot_factor;
-    float step_speed;
+    float step_speed = 8.f;
     float foot_distance_on_x;
 
 private:
