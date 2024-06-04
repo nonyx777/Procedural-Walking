@@ -147,3 +147,19 @@ float Math::_map(float value, float max1, float max2)
     float result = (value * max2) / max1;
     return result;
 }
+
+float Math::_min(float x, float y)
+{
+    if(x < y)
+        return x;
+    else 
+        return y;
+}
+
+float Math::_max(float x, float y)
+{
+    if(x > y)
+        return x;
+    else
+        return y;
+}

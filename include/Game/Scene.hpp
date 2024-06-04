@@ -12,7 +12,7 @@ class Scene : public GameObject
 {
 private:
     static Scene *instance;
-    std::vector<std::vector<Box>> grid;
+    Gizmo gizmo;
 
     std::vector<Circle> right_joints;
     std::vector<Circle> left_joints;
@@ -25,10 +25,18 @@ private:
     Circle left_target;
 
     // IK related
-    float upperarm_length = 70.f; 
+    float upperarm_length = 70.f;
     float forearm_length = 70.f;
     float shoulder_hand_length;
     float epsilon = 0.1f;
+
+    // walk related
+    float lerp;
+    sf::Vector2f r_start_pos, r_end_pos, r_mid_pos;
+    sf::Vector2f l_start_pos, l_end_pos, l_mid_pos;
+    float over_shoot_factor;
+    float step_speed;
+    float foot_distance_on_x;
 
 private:
     Scene();
@@ -53,4 +61,9 @@ public:
     // IK related
     void solveIK(std::vector<Circle> &joints, Circle &target);
     void outOfReach(std::vector<Circle> &joints, Circle &target_);
+
+    // walk related
+    void solveWalk();
+    bool inBalance(float x, float y, float value);
+    void newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target);
 };

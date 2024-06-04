@@ -40,4 +40,6 @@ public:
     static sf::Vector2f _maxVector(std::vector<sf::Vector2f> &vectors);
     static float _lerp(float min, float max, float t);
     static float _map(float value, float max1, float max2);
+    static float _min(float x, float y);
+    static float _max(float x, float y);
 };
