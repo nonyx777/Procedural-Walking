@@ -142,6 +142,12 @@ float Math::_lerp(float min, float max, float t)
     return value;
 }
 
+sf::Vector2f Math::_lerp(sf::Vector2f a, sf::Vector2f b, float t)
+{
+    sf::Vector2f value = a + (b - a) * t;
+    return value;
+}
+
 float Math::_map(float value, float max1, float max2)
 {
     float result = (value * max2) / max1;
@@ -150,15 +156,15 @@ float Math::_map(float value, float max1, float max2)
 
 float Math::_min(float x, float y)
 {
-    if(x < y)
+    if (x < y)
         return x;
-    else 
+    else
         return y;
 }
 
 float Math::_max(float x, float y)
 {
-    if(x > y)
+    if (x > y)
         return x;
     else
         return y;

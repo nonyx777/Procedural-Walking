@@ -31,7 +31,7 @@ private:
     float epsilon = 0.1f;
 
     // walk related
-    float lerp;
+    float lerp = 0.f;
     sf::Vector2f r_start_pos, r_end_pos, r_mid_pos;
     sf::Vector2f l_start_pos, l_end_pos, l_mid_pos;
     float over_shoot_factor;

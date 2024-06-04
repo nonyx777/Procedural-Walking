@@ -169,7 +169,9 @@ void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) - sf::Vector2f(foot_distance_on_x, 0.f);
     else
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) + sf::Vector2f(foot_distance_on_x, 0.f);
-    foot_target.property.setPosition(end_pos + sf::Vector2f(over_shoot_factor, 0.f));
+
+    sf::Vector2f disp = (end_pos + sf::Vector2f(over_shoot_factor, 0.f)) - foot_target.property.getPosition();
+    foot_target.property.move(disp);
 }
 
 void Scene::solveWalk()
