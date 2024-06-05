@@ -144,6 +144,7 @@ float Math::_lerp(float min, float max, float t)
 
 sf::Vector2f Math::_lerp(sf::Vector2f a, sf::Vector2f b, float t)
 {
+    t = _clampOnRange(t, 0.f, 1.f);
     sf::Vector2f value = a + (b - a) * t;
     return value;
 }

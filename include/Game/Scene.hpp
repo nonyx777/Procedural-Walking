@@ -31,12 +31,13 @@ private:
     float epsilon = 0.1f;
 
     // walk related
-    float lerp = 0.f;
+    float right_lerp = 1.f;
+    float left_lerp = 0.f;
     sf::Vector2f r_start_pos, r_end_pos, r_mid_pos;
     sf::Vector2f l_start_pos, l_end_pos, l_mid_pos;
-    float over_shoot_factor;
+    float over_shoot_factor = 20.f;
     float step_speed = 8.f;
-    float foot_distance_on_x;
+    float foot_distance_on_x = 10.f;
 
 private:
     Scene();
@@ -65,5 +66,5 @@ public:
     // walk related
     void solveWalk();
     bool inBalance(float x, float y, float value);
-    void newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target);
+    void newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target, float &current_foot_lerp);
 };

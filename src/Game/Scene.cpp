@@ -9,13 +9,13 @@ Scene::Scene()
     body.property.setFillColor(sf::Color(171, 120, 78, 255));
 
     // target...
-    right_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(-body.property.getRadius() * 0.5f, (upperarm_length + forearm_length - 10.f)));
+    right_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(-body.property.getRadius() * 0.7f, (upperarm_length + forearm_length - 10.f)));
     right_target.property.setFillColor(sf::Color::Red);
-    left_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, (upperarm_length + forearm_length - 10.f)));
+    left_target = Circle(10.f, body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.7f, (upperarm_length + forearm_length - 10.f)));
     left_target.property.setFillColor(sf::Color::Blue);
 
     // setting up right leg joints
-    Circle joint = Circle(10.f, body.property.getPosition() - sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
+    Circle joint = Circle(10.f, body.property.getPosition());
     this->right_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f, GLOBAL::window_height / 2.f + 50.f));
     this->right_joints.push_back(joint);
@@ -23,7 +23,7 @@ Scene::Scene()
     this->right_joints.push_back(joint);
 
     // setting up left leg joints
-    joint = Circle(10.f, body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
+    joint = Circle(10.f, body.property.getPosition());
     this->left_joints.push_back(joint);
     joint = Circle(10.f, sf::Vector2f(GLOBAL::window_width / 2.f + 100.f, GLOBAL::window_height / 2.f + 50.f));
     this->left_joints.push_back(joint);
@@ -31,12 +31,11 @@ Scene::Scene()
     this->left_joints.push_back(joint);
 
     // walk related
-    r_start_pos = r_end_pos = right_target.property.getPosition();
     l_start_pos = l_end_pos = left_target.property.getPosition();
+    r_start_pos = r_end_pos = right_target.property.getPosition();
 
     // could have also used left_target
-    foot_distance_on_x = body.property.getPosition().x - right_target.property.getPosition().x;
-    over_shoot_factor = 5.f;
+    // foot_distance_on_x = body.property.getPosition().x - right_target.property.getPosition().x;
 }
 
 Scene::~Scene()
@@ -72,11 +71,11 @@ void Scene::update(float dt)
     // walk
     solveWalk();
 
-    right_target.property.setPosition(Math::_lerp(r_start_pos, r_end_pos, lerp));
-    left_target.property.setPosition(Math::_lerp(l_start_pos, l_end_pos, lerp));
-    
-    if(lerp < 1.05f)
-        lerp += step_speed * dt;
+    right_target.property.setPosition(Math::_lerp(r_start_pos, r_end_pos, right_lerp));
+    left_target.property.setPosition(Math::_lerp(l_start_pos, l_end_pos, left_lerp));
+
+    right_lerp += step_speed * dt;
+    left_lerp += step_speed * dt;
 }
 
 void Scene::render(sf::RenderTarget *target)
@@ -93,12 +92,12 @@ void Scene::render(sf::RenderTarget *target)
     for (Line &line : this->right_links)
         line.render(target);
 
-    this->right_target.render(target);
-    this->left_target.render(target);
+    // this->left_target.render(target);
+    // this->right_target.render(target);
 
-    gizmo.drawRay(body.property.getPosition(), body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length)));
-    gizmo.drawCircle(body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length)), 10.f, sf::Color::Green);
-    gizmo.drawAll(target);
+    // gizmo.drawRay(body.property.getPosition(), body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length)));
+    // gizmo.drawCircle(body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length)), 10.f, sf::Color::Green);
+    // gizmo.drawAll(target);
 }
 
 void Scene::alignLink(std::vector<Line> &links, std::vector<Circle> &joints)
@@ -156,8 +155,8 @@ void Scene::outOfReach(std::vector<Circle> &joints, Circle &target_)
 
 void Scene::alignHip()
 {
-    right_joints[0].property.setPosition(body.property.getPosition() - sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
-    left_joints[0].property.setPosition(body.property.getPosition() + sf::Vector2f(body.property.getRadius() * 0.5f, 0.f));
+    right_joints[0].property.setPosition(body.property.getPosition());
+    left_joints[0].property.setPosition(body.property.getPosition());
 }
 
 bool Scene::inBalance(float x, float y, float value)
@@ -168,11 +167,11 @@ bool Scene::inBalance(float x, float y, float value)
     return value >= min && value <= max;
 }
 
-void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target)
+void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target, float &current_foot_lerp)
 {
     start_pos = end_pos;
 
-    lerp = 0.f;
+    current_foot_lerp = 0.f;
 
     if (foot_target.property.getFillColor() == sf::Color::Red)
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) - sf::Vector2f(foot_distance_on_x, 0.f);
@@ -184,9 +183,11 @@ void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot
 
 void Scene::solveWalk()
 {
-    if (!inBalance(right_joints[2].property.getPosition().x, left_joints[2].property.getPosition().x, body.property.getPosition().x) && lerp > 1.f)
+    if (!inBalance(right_joints[2].property.getPosition().x, left_joints[2].property.getPosition().x, body.property.getPosition().x))
     {
-        newStep(r_start_pos, r_end_pos, right_target);
-        newStep(l_start_pos, l_end_pos, left_target);
+        if (left_lerp > 1.f && right_lerp > left_lerp)
+            newStep(r_start_pos, r_end_pos, right_target, right_lerp);
+        if (right_lerp > 4.f && left_lerp > right_lerp)
+            newStep(l_start_pos, l_end_pos, left_target, left_lerp);
     }
 }
