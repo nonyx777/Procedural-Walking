@@ -36,11 +36,15 @@ private:
     sf::Vector2f r_start_pos, r_end_pos, r_mid_pos;
     sf::Vector2f l_start_pos, l_end_pos, l_mid_pos;
     float over_shoot_factor = 20.f;
-    float step_speed = 8.f;
+    float min_step_speed = 8.f;
+    float step_speed;
+    float max_step_speed = 18.f;
+    float step_speed_lerp = 0.f;
     float foot_distance_on_x = 10.f;
     float step_size = 0.f;
     float body_height = 0.f;
     float grounded_foot_height = 0.f;
+    float body_speed = 1.f;
 
 private:
     Scene();

@@ -28,7 +28,7 @@ void ConfigWindow::update(float dt)
     ImGui::InputInt("Window Width", &GLOBAL::window_width);
 
     GLOBAL::window_height = Math::_clampOnRange(GLOBAL::window_height, 400, 1000);
-    GLOBAL::window_width = Math::_clampOnRange(GLOBAL::window_width, 400, 1000);
+    GLOBAL::window_width = Math::_clampOnRange(GLOBAL::window_width, 400, 2000);
 
     // configure grid
     ImGui::Text("Grid Configuration");
