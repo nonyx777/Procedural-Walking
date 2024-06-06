@@ -38,6 +38,9 @@ private:
     float over_shoot_factor = 20.f;
     float step_speed = 8.f;
     float foot_distance_on_x = 10.f;
+    float step_size = 0.f;
+    float body_height = 0.f;
+    float grounded_foot_height = 0.f;
 
 private:
     Scene();

@@ -33,9 +33,8 @@ Scene::Scene()
     // walk related
     l_start_pos = l_end_pos = l_mid_pos = left_target.property.getPosition();
     r_start_pos = r_end_pos = r_mid_pos = right_target.property.getPosition();
-
-    // could have also used left_target
-    // foot_distance_on_x = body.property.getPosition().x - right_target.property.getPosition().x;
+    body_height = body.property.getPosition().y;
+    grounded_foot_height = right_target.property.getPosition().y;
 }
 
 Scene::~Scene()
@@ -74,8 +73,29 @@ void Scene::update(float dt)
     right_target.property.setPosition(Math::_lerp(Math::_lerp(r_start_pos, r_mid_pos, right_lerp), Math::_lerp(r_mid_pos, r_end_pos, right_lerp), right_lerp));
     left_target.property.setPosition(Math::_lerp(Math::_lerp(l_start_pos, l_mid_pos, left_lerp), Math::_lerp(l_mid_pos, l_end_pos, left_lerp), left_lerp));
 
+    // body bobbing
+    if (right_lerp < 1.f)
+    {
+        float height = Math::_map(right_target.property.getPosition().y, grounded_foot_height, body_height);
+        sf::Vector2f height_vector = sf::Vector2f(body.property.getPosition().x, height);
+        sf::Vector2f tempo = height_vector - body.property.getPosition();
+        body.property.move(tempo * 0.05f);
+    }
+    else if (left_lerp < 1.f)
+    {
+        float height = Math::_map(left_target.property.getPosition().y, grounded_foot_height, body_height);
+        sf::Vector2f height_vector = sf::Vector2f(body.property.getPosition().x, height);
+        sf::Vector2f tempo = height_vector - body.property.getPosition();
+        body.property.move(tempo * 0.05f);
+    }
+    else
+    {
+        body.property.setPosition(body.property.getPosition().x, body_height);
+    }
+
     right_lerp += step_speed * dt;
     left_lerp += step_speed * dt;
+    step_size = 0.f;
 }
 
 void Scene::render(sf::RenderTarget *target)
@@ -180,7 +200,7 @@ void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, sf::Vector2f
 
     end_pos += sf::Vector2f(over_shoot_factor, 0.f);
 
-    float step_size = Math::_length(end_pos - start_pos);
+    step_size = Math::_length(end_pos - start_pos);
     mid_pos = (start_pos + end_pos) / 2.f;
     mid_pos.y -= step_size;
 }
@@ -192,6 +212,6 @@ void Scene::solveWalk()
         if (left_lerp > 1.f && right_lerp > left_lerp)
             newStep(r_start_pos, r_end_pos, r_mid_pos, right_target, right_lerp);
         if (right_lerp > 4.f && left_lerp > right_lerp)
-            newStep(l_start_pos, l_end_pos, l_mid_pos,left_target, left_lerp);
+            newStep(l_start_pos, l_end_pos, l_mid_pos, left_target, left_lerp);
     }
 }
