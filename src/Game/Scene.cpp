@@ -31,8 +31,8 @@ Scene::Scene()
     this->left_joints.push_back(joint);
 
     // walk related
-    l_start_pos = l_end_pos = left_target.property.getPosition();
-    r_start_pos = r_end_pos = right_target.property.getPosition();
+    l_start_pos = l_end_pos = l_mid_pos = left_target.property.getPosition();
+    r_start_pos = r_end_pos = r_mid_pos = right_target.property.getPosition();
 
     // could have also used left_target
     // foot_distance_on_x = body.property.getPosition().x - right_target.property.getPosition().x;
@@ -71,8 +71,8 @@ void Scene::update(float dt)
     // walk
     solveWalk();
 
-    right_target.property.setPosition(Math::_lerp(r_start_pos, r_end_pos, right_lerp));
-    left_target.property.setPosition(Math::_lerp(l_start_pos, l_end_pos, left_lerp));
+    right_target.property.setPosition(Math::_lerp(Math::_lerp(r_start_pos, r_mid_pos, right_lerp), Math::_lerp(r_mid_pos, r_end_pos, right_lerp), right_lerp));
+    left_target.property.setPosition(Math::_lerp(Math::_lerp(l_start_pos, l_mid_pos, left_lerp), Math::_lerp(l_mid_pos, l_end_pos, left_lerp), left_lerp));
 
     right_lerp += step_speed * dt;
     left_lerp += step_speed * dt;
@@ -167,7 +167,7 @@ bool Scene::inBalance(float x, float y, float value)
     return value >= min && value <= max;
 }
 
-void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target, float &current_foot_lerp)
+void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, sf::Vector2f &mid_pos, Circle &foot_target, float &current_foot_lerp)
 {
     start_pos = end_pos;
 
@@ -179,6 +179,10 @@ void Scene::newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot
         end_pos = (body.property.getPosition() + sf::Vector2f(0.f, (upperarm_length + forearm_length - 10.f))) + sf::Vector2f(foot_distance_on_x, 0.f);
 
     end_pos += sf::Vector2f(over_shoot_factor, 0.f);
+
+    float step_size = Math::_length(end_pos - start_pos);
+    mid_pos = (start_pos + end_pos) / 2.f;
+    mid_pos.y -= step_size;
 }
 
 void Scene::solveWalk()
@@ -186,8 +190,8 @@ void Scene::solveWalk()
     if (!inBalance(right_joints[2].property.getPosition().x, left_joints[2].property.getPosition().x, body.property.getPosition().x))
     {
         if (left_lerp > 1.f && right_lerp > left_lerp)
-            newStep(r_start_pos, r_end_pos, right_target, right_lerp);
+            newStep(r_start_pos, r_end_pos, r_mid_pos, right_target, right_lerp);
         if (right_lerp > 4.f && left_lerp > right_lerp)
-            newStep(l_start_pos, l_end_pos, left_target, left_lerp);
+            newStep(l_start_pos, l_end_pos, l_mid_pos,left_target, left_lerp);
     }
 }

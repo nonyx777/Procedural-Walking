@@ -66,5 +66,5 @@ public:
     // walk related
     void solveWalk();
     bool inBalance(float x, float y, float value);
-    void newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, Circle &foot_target, float &current_foot_lerp);
+    void newStep(sf::Vector2f &start_pos, sf::Vector2f &end_pos, sf::Vector2f &mid_pos, Circle &foot_target, float &current_foot_lerp);
 };
